@@ -14,7 +14,7 @@ HTML ="""
 <!doctype html>
 <html>
 <head>
-<title>Buluttan Selam </title>
+<title>istanbul tripten Selam</title>
 <style>
     body {font-family: Arial; text-align: center; padding: 50px; background: #eef2f3;}
     h1 { color: #333; }
@@ -26,7 +26,7 @@ HTML ="""
   </style>
 </head>
 <body>
-    <h1>Buluttan Selam</h1>
+    <h1>istanbul tripten Selam</h1>
     <p>adını yaz, selamını bırak</p>
 
     <form method="POST">
@@ -35,8 +35,8 @@ HTML ="""
     </form>
     <h3>Ziyaretçiler</h3>
     <ul>
-        {% for ad in isimler%}
-            <li>{{ ad[0] }}</li> 
+        {% for ad_tuple in isimler %}
+            <li>{{ ad_tuple[0] }}</li> 
         {% endfor %}
     </ul>
 </body>
@@ -51,7 +51,6 @@ def connect_db():
         conn = psycopg2.connect(DATABASE_URL)
         yield conn
     finally:
-        # Bağlantının her zaman kapatılmasını garanti eder
         if conn:
             conn.close()
 
@@ -61,44 +60,40 @@ def init_db():
     try:
         with connect_db() as conn:
             with conn.cursor() as cur:
-                # Tablo sadece yoksa oluşturulur.
                 cur.execute("CREATE TABLE IF NOT EXISTS ziyaretciler (id SERIAL PRIMARY KEY, isim TEXT NOT NULL)")
             conn.commit()
         print("Veritabanı tablosu hazır.")
     except Exception as e:
-        # Hata durumunda uygulama devam etmeden önce sorunun çözülmesi gerekir
         print(f"HATA: Veritabanı başlatılırken sorun oluştu: {e}") 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     isimler = []
     try:
-        # Bağlantı ve Cursor (İmleç) with blokları ile güvenli yönetilir
+        # Bağlantı ve Cursor güvenli yönetilir
         with connect_db() as conn:
             with conn.cursor() as cur:
                 if request.method == "POST":
-                    # İsim temizliği yapıldı
                     isim = (request.form.get("isim") or "").strip() 
                     
                     if isim:
-                        # GÜVENLİ VERİ EKLEME (SQL Enjeksiyonu önlendi)
+                        # GÜVENLİ VERİ EKLEME
                         cur.execute("INSERT INTO ziyaretciler (isim) VALUES (%s)", (isim,))
                         conn.commit()
 
-                # EKLEME: Tüm isimleri veritabanından çekme
+                # ÖNEMLİ DÜZELTME: Veritabanından verileri çekme işlemi hem POST hem GET için çalışır
                 cur.execute("SELECT isim FROM ziyaretciler ORDER BY id DESC")
                 isimler = cur.fetchall() # Sonuçlar çekilir
 
     except Exception as e:
         print(f"HATA: Veritabanı işlemi sırasında hata: {e}")
-        # Hata oluşsa bile boş isim listesi ile sayfa gösterilir
+        # Hata oluşsa bile sayfa boş liste ile gösterilir
 
+    # Sayfa artık isimler listesi ile render edilir
     return render_template_string(HTML, isimler=isimler)
 
 
 if __name__ == "__main__":
     init_db() # Önce veritabanı yapısını hazırla
-    # Render gibi platformlarda çalıştırmak için host="0.0.0.0" zorunludur.
-    # PORT değişkenini de os.getenv() ile almak daha iyi bir uygulamadır,
-    # ancak bu haliyle de düzgün çalışacaktır.
+    # Host ve Port Render ortamına uygun olarak ayarlanır
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
