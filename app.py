@@ -1,12 +1,12 @@
 from flask import Flask, render_template_string, request
 import os
 import psycopg2
-from contextlib import contextmanager 
+from contextlib import contextmanager
 
-# Flask uygulamasının tanımlanması (Sözdizimi Hatası Düzeltildi: __name__)
+# Flask uygulamasının tanımlanması
 app = Flask(__name__)
 
-# Render'ın otomatik tanımladığı veritabanı bağlantı bilgisi (DATABASE_URL ortam değişkeni)
+# Render'ın otomatik tanımladığı veritabanı bağlantı bilgisi
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://clooud2_2_dp_user:lT7t7P1OWoTiIINtSuPoE3VrRF8IAGBr@dpg-d3ub82re5dus739hupo0-a.oregon-postgres.render.com/clooud2_2_dp")
 
 # HTML ŞABLONU 
@@ -36,14 +36,14 @@ HTML ="""
     <h3>Ziyaretçiler</h3>
     <ul>
         {% for ad in isimler%}
-            <li>{{ ad }}</li>
+            <li>{{ ad[0] }}</li> 
         {% endfor %}
     </ul>
 </body>
 </html>
 """
 
-# Güvenli bağlantı yönetimi için contextmanager kullanılır (Bağlantı yönetimi hatası düzeltildi)
+# Güvenli bağlantı yönetimi için contextmanager
 @contextmanager
 def connect_db():
     conn = None
@@ -55,7 +55,7 @@ def connect_db():
         if conn:
             conn.close()
 
-# Uygulama başlatıldığında bir kez çalışacak fonksiyon (Performans iyileştirildi)
+# Uygulama başlatıldığında bir kez çalışacak fonksiyon
 def init_db():
     print("Veritabanı tablosu kontrol ediliyor...")
     try:
@@ -66,8 +66,8 @@ def init_db():
             conn.commit()
         print("Veritabanı tablosu hazır.")
     except Exception as e:
-        print(f"HATA: Veritabanı başlatılırken sorun oluştu: {e}")
         # Hata durumunda uygulama devam etmeden önce sorunun çözülmesi gerekir
+        print(f"HATA: Veritabanı başlatılırken sorun oluştu: {e}") 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -81,14 +81,24 @@ def index():
                     isim = (request.form.get("isim") or "").strip() 
                     
                     if isim:
-                        # GÜVENLİ VERİ EKLEME (SQL Enjeksiyonu yok)
+                        # GÜVENLİ VERİ EKLEME (SQL Enjeksiyonu önlendi)
                         cur.execute("INSERT INTO ziyaretciler (isim) VALUES (%s)", (isim,))
                         conn.commit()
 
-        return render_template_string(HTML, isimler=isimler)
+                # EKLEME: Tüm isimleri veritabanından çekme
+                cur.execute("SELECT isim FROM ziyaretciler ORDER BY id DESC")
+                isimler = cur.fetchall() # Sonuçlar çekilir
+
+    except Exception as e:
+        print(f"HATA: Veritabanı işlemi sırasında hata: {e}")
+        # Hata oluşsa bile boş isim listesi ile sayfa gösterilir
+
+    return render_template_string(HTML, isimler=isimler)
 
 
-# Sözdizimi hataları düzeltildi: if __name__ == "__main__": ve app.run()
 if __name__ == "__main__":
     init_db() # Önce veritabanı yapısını hazırla
-    app.run(host="0.0.0.0", port=5000)
+    # Render gibi platformlarda çalıştırmak için host="0.0.0.0" zorunludur.
+    # PORT değişkenini de os.getenv() ile almak daha iyi bir uygulamadır,
+    # ancak bu haliyle de düzgün çalışacaktır.
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
