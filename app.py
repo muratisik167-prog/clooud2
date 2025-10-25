@@ -28,6 +28,7 @@ HTML ="""
 <body>
     <h1>Buluttan Selam</h1>
     <p>adını yaz, selamını bırak</p>
+
     <form method="POST">
         <input type="text" name="isim" placeholder="Adını yaz" required>
         <button type="submit">Gönder</button>
@@ -84,10 +85,6 @@ def index():
                         cur.execute("INSERT INTO ziyaretciler (isim) VALUES (%s)", (isim,))
                         conn.commit()
 
-                # Verileri çekme
-                cur.execute("SELECT isim FROM ziyaretciler ORDER BY id DESC LIMIT 10")
-                isimler = [row[0] for row in cur.fetchall()]
-                
         return render_template_string(HTML, isimler=isimler)
 
 
