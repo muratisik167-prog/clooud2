@@ -89,11 +89,7 @@ def index():
                 isimler = [row[0] for row in cur.fetchall()]
                 
         return render_template_string(HTML, isimler=isimler)
-    
-    except Exception as e:
-        # Hata yönetimi eklendi
-        print(f"İstek sırasında hata: {e}") 
-        return "İç sunucu hatası oluştu.", 500
+
 
 # Sözdizimi hataları düzeltildi: if __name__ == "__main__": ve app.run()
 if __name__ == "__main__":
