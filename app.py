@@ -7,7 +7,7 @@ from contextlib import contextmanager
 app = Flask(__name__)
 
 # Render'ın otomatik tanımladığı veritabanı bağlantı bilgisi
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://clooud2_2_dp_user:lT7t7P1OWoTiIINtSuPoE3VrRF8IAGBr@dpg-d3ub82re5dus739hupo0-a.oregon-postgres.render.com/clooud2_2_dp")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://cloud2_user:KbeZWD5LqQjpXnTw6RDvz8YcuBzkaOWS@dpg-d5chscf5r7bs73b1qll0-a.oregon-postgres.render.com/cloud2")
 
 # HTML ŞABLONU 
 HTML ="""
