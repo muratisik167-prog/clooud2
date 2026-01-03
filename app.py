@@ -14,7 +14,7 @@ HTML ="""
 <!doctype html>
 <html>
 <head>
-<title>istanbul tripten Selam</title>
+<title>murat işık</title>
 <style>
     body {font-family: Arial; text-align: center; padding: 50px; background: #eef2f3;}
     h1 { color: #333; }
@@ -26,7 +26,7 @@ HTML ="""
   </style>
 </head>
 <body>
-    <h1>istanbul tripten Selam</h1>
+    <h1>buluttan selam</h1>
     <p>adını yaz, selamını bırak</p>
 
     <form method="POST">
